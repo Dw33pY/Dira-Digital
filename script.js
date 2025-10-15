@@ -181,7 +181,7 @@ backToTopButton.addEventListener('click', function() {
 
 // Animation on scroll
 const animateOnScroll = function() {
-    const elements = document.querySelectorAll('.service-card, .benefit, .service-detail, .stat');
+    const elements = document.querySelectorAll('.service-card, .benefit, .service-detail, .stat, .blog-post, .portfolio-item, .team-member');
     
     elements.forEach(element => {
         const elementPosition = element.getBoundingClientRect().top;
@@ -195,7 +195,7 @@ const animateOnScroll = function() {
 };
 
 // Set initial state for animated elements
-document.querySelectorAll('.service-card, .benefit, .service-detail, .stat').forEach(element => {
+document.querySelectorAll('.service-card, .benefit, .service-detail, .stat, .blog-post, .portfolio-item, .team-member').forEach(element => {
     element.style.opacity = '0';
     element.style.transform = 'translateY(20px)';
     element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
@@ -236,6 +236,138 @@ stats.forEach(stat => {
     observer.observe(stat);
 });
 
+// Portfolio Filtering
+const filterButtons = document.querySelectorAll('.filter-btn');
+const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        const filterValue = this.getAttribute('data-filter');
+        
+        portfolioItems.forEach(item => {
+            if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Blog Search Functionality
+function initializeBlogSearch() {
+    const searchInput = document.querySelector('.search-widget input');
+    const searchButton = document.querySelector('.search-widget button');
+    
+    if (searchInput && searchButton) {
+        searchButton.addEventListener('click', function() {
+            performBlogSearch(searchInput.value);
+        });
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performBlogSearch(searchInput.value);
+            }
+        });
+    }
+}
+
+function performBlogSearch(query) {
+    if (query.trim()) {
+        // In a real implementation, this would make an API call
+        // For now, we'll just show an alert
+        alert(`Searching for: ${query}`);
+        // You would typically redirect to a search results page
+        // window.location.href = `blog-search.html?q=${encodeURIComponent(query)}`;
+    }
+}
+
+// Newsletter Form Handling
+function initializeNewsletterForm() {
+    const newsletterForm = document.querySelector('.newsletter-form');
+    
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emailInput = this.querySelector('input[type="email"]');
+            const email = emailInput.value;
+            
+            if (validateEmail(email)) {
+                // Simulate newsletter subscription
+                alert('Thank you for subscribing to our newsletter!');
+                emailInput.value = '';
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        });
+    }
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Social Share Functionality
+function initializeSocialShare() {
+    const shareButtons = document.querySelectorAll('.share-btn');
+    
+    shareButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const platform = this.classList[1]; // facebook, twitter, linkedin
+            const url = window.location.href;
+            const title = document.title;
+            
+            let shareUrl;
+            
+            switch(platform) {
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                    break;
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+                    break;
+                case 'linkedin':
+                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        });
+    });
+}
+
+// Blog Post Reading Time
+function calculateReadingTime() {
+    const article = document.querySelector('.article-content');
+    if (article) {
+        const text = article.textContent;
+        const wordCount = text.split(/\s+/).length;
+        const readingTime = Math.ceil(wordCount / 200); // 200 words per minute
+        
+        const readingTimeElement = document.querySelector('.post-read-time');
+        if (readingTimeElement) {
+            readingTimeElement.innerHTML = `<i class="fas fa-clock"></i> ${readingTime} min read`;
+        }
+    }
+}
+
+// Initialize all blog functionality
+function initializeBlogFeatures() {
+    initializeBlogSearch();
+    initializeNewsletterForm();
+    initializeSocialShare();
+    calculateReadingTime();
+}
+
 // Form handling (placeholder for contact form)
 document.addEventListener('DOMContentLoaded', function() {
     // Add any form handling logic here when you add a contact form
@@ -243,6 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize any other interactive elements
     initializeInteractiveElements();
+    initializeBlogFeatures();
 });
 
 function initializeInteractiveElements() {
@@ -276,4 +409,26 @@ const whatsappButton = document.querySelector('.whatsapp-float');
 whatsappButton.addEventListener('click', function(e) {
     // You can add any tracking or analytics here
     console.log('WhatsApp button clicked');
+});
+
+// Update smooth scrolling to only work for same-page anchors
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        // Only prevent default if it's a same-page anchor
+        if (this.getAttribute('href') !== '#' && 
+            this.pathname === window.location.pathname) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            if(targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if(targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    });
 });
